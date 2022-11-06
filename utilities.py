@@ -32,6 +32,7 @@ def plot_hist(dataframe, attribute_name, log=False):
     df.hist(attribute_name, bins=n_bins, log=True)
 
 
+# Plot a boxplot w.r.t. a single attribute passed as parameter.
 def plot_boxplot(df, col, log=False):
     # Plot the distribution of the indicated column
     plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
@@ -48,6 +49,7 @@ def eval_correlation(df_corr, method='pearson'):
     sn.heatmap(correlation_matrix, annot=True, linewidths=.5, ax=ax)
     plt.show()
 
+#Plot a histogram w.r.t. a single attribute passed as parameter.
 def plot_hist(dataframe, attribute_name, log=False):
     df = pd.DataFrame()
 
