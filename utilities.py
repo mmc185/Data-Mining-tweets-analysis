@@ -16,6 +16,37 @@ def to_float(x):
         return float(-1)
 
 
+def select_best_created_at(dates):
+    twitter_foundation = pd.to_datetime(["20060321"]).astype(np.int64)[0]
+    sep_2022 = pd.to_datetime(["20220915"]).astype(np.int64)[0]
+
+    correct = []
+    wrong = []
+
+    for date in dates:
+        if date < sep_2022 and date >= twitter_foundation:
+            correct.append(date)
+        else:
+            wrong.append(date)
+
+    if len(correct) == 0:
+        # we have no correct candidate, so do not perform any substitution. We will deal with this record in the data cleaning step.
+        return []
+    if len(correct) == 1:
+        # we have only one correct candidate, so we can merge the duplicates into one.
+        return correct[0]
+    if len(correct) > 1:
+        # we return all the candidates.
+        return correct
+
+
+def len_with_int(x):
+    try:
+        return len(x)
+    except TypeError:
+        return 1
+
+
 def plot_hist(dataframe, attribute_name, log=False):
     df = pd.DataFrame()
 
