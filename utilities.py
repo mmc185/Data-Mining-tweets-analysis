@@ -74,9 +74,7 @@ def plot_boxplot(df, col, log=False):
 
 def eval_correlation(df_corr, method='pearson'):
     correlation_matrix = df_corr.corr(method=method)
-    # sn.heatmap(correlation_matrix, annot=True)
     fig, ax = plt.subplots(figsize=(10, 10))  # Sample figsize in inches
-    print(correlation_matrix)
     sn.heatmap(correlation_matrix, annot=True, linewidths=.5, ax=ax)
     plt.show()
 
