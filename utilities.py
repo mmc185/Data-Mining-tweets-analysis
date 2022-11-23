@@ -47,7 +47,35 @@ def len_with_int(x):
         return 1
 
 
-def plot_hist(dataframe, attribute_name, log=False):
+
+
+
+# Plot a boxplot w.r.t. a single attribute passed as parameter.
+def plot_boxplot(df, col, log=False, path=None):
+    # Plot the distribution of the indicated column
+    plt.title(col)
+    plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
+    plt.title(col)
+    if log:
+        plt.yscale('log')
+
+    if path is None:
+        plt.show()
+    else:
+        plt.savefig(path)
+
+
+def eval_correlation(df_corr, method='pearson', path=None):
+    correlation_matrix = df_corr.corr(method=method)
+    fig, ax = plt.subplots(figsize=(10, 10))  # Sample figsize in inches
+    sn.heatmap(correlation_matrix, annot=True, linewidths=.5, ax=ax)
+    if path is not None:
+        plt.savefig(path)
+    else:
+        plt.show()
+
+#Plot a histogram w.r.t. a single attribute passed as parameter.
+def plot_hist(dataframe, attribute_name, log=False, path=None):
     df = pd.DataFrame()
 
     if log:
@@ -59,40 +87,24 @@ def plot_hist(dataframe, attribute_name, log=False):
 
     else:
         df[attribute_name] = dataframe[attribute_name].values
-    n_bins = math.ceil(np.log2(len(df[attribute_name])) + 1)  # Sturges' rule
+    n_bins = math.ceil(np.log2(len(df[attribute_name])) + 1) # Sturges' rule
     df.hist(attribute_name, bins=n_bins, log=True)
+    if path is not None:
+        plt.savefig(path)
 
 
-# Plot a boxplot w.r.t. a single attribute passed as parameter.
-def plot_boxplot(df, col, log=False):
-    # Plot the distribution of the indicated column
-    plt.title(col)
-    plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
-    plt.title(col)
-    if log:
-        plt.yscale('log')
-
-    plt.show()
-
-
-def eval_correlation(df_corr, method='pearson'):
-    correlation_matrix = df_corr.corr(method=method)
-    fig, ax = plt.subplots(figsize=(10, 10))  # Sample figsize in inches
-    sn.heatmap(correlation_matrix, annot=True, linewidths=.5, ax=ax)
-    plt.show()
-
-#Plot a histogram w.r.t. a single attribute passed as parameter.
-def plot_hist(dataframe, attribute_name, log=False):
-    df = pd.DataFrame()
-
-    if log:
-        log_attribute_name = attribute_name+'_log'
-        df[log_attribute_name] = np.log(dataframe[attribute_name].values)
-
-        attribute_name = log_attribute_name
-        df[attribute_name] = df[attribute_name].replace(-np.inf, 0)
-
-    else:
-        df[attribute_name] = dataframe[attribute_name].values
-    n_bins = math.ceil(np.log2(len(df[attribute_name])) + 1) #Sturges' rule
-    df.hist(attribute_name, bins = n_bins, log=True)
+def date_labels(df, attr, format='M', axes='x', n_ticks = 6):
+    """
+    Utility function to put human readable labels for timestamps instead of seconds.
+    :param df:
+    :param attr:
+    :param format:
+    :param axes: 'x' or 'y', the axes where to convert the date labels
+    :return:
+    """
+    # create indices and labels for the plot. This is done because if you pass the entire sequence it takes years to compute
+    indices = [df[attr].min() + q*(df[attr].max()-df[attr].min()) for q in np.array(list(range(0,n_ticks)))/(n_ticks-1)]
+    if axes == 'x':
+        plt.xticks(indices, labels=pd.to_datetime(indices).to_period(format))
+    if axes == 'y':
+        plt.yticks(indices, labels=pd.to_datetime(indices).to_period(format))
