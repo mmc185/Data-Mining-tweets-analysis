@@ -66,8 +66,8 @@ def plot_hist(dataframe, attribute_name, log=False):
 # Plot a boxplot w.r.t. a single attribute passed as parameter.
 def plot_boxplot(df, col, log=False):
     # Plot the distribution of the indicated column
-
-    plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
+    plt.title(col)
+    plt.boxplot((df[df[col] != -1.0][col]).notnull(), showmeans=True)
     plt.title(col)
     if log:
         plt.yscale('log')
