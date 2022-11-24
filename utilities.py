@@ -107,19 +107,7 @@ def date_labels(df, attr, format='M', axis='x', n_ticks = 6):
     if axis == 'y':
         plt.yticks(indices, labels=pd.to_datetime(indices).to_period(format))
 
-def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
-    """
-
-    :param df:
-    :param x_attr:
-    :param y_attr:
-    :param path:
-    :param log:
-    :param date_axis: None, 'x', 'y', or 'both'. If there is some timestamp dimension, pass the respective axis to convert the ticks in human readable format.
-    :return:
-    """
-    plt.scatter(df[x_attr], df[y_attr], color='g', marker='*', )
-
+def _scatter_show(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
     if xlabel is None:
         plt.xlabel(x_attr)
     else:
@@ -144,20 +132,31 @@ def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabe
     else:
         plt.savefig(path)
 
+def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
+    """
+
+    :param df: dataframe containing x_attr, y_attr
+    :param x_attr: dataframe attribute to put on the x axis.
+    :param y_attr: dataframe attribute to put on the y axis.
+    :param path: path where to save the plot. If none just calls plt.show().
+    :param log: boolean. Whether to use or not log scale on y axis.
+    :param date_axis: None, 'x', 'y', or 'both'. If there is some timestamp dimension, pass the respective axis to convert the ticks in human readable format.
+    :return:
+    """
+    plt.scatter(df[x_attr], df[y_attr], color='g', marker='*')
+    _scatter_show(df, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
+
+
+
+def bot_scatter(df, x_attr, y_attr, log=False, path=None, date_axis=None, xlabel=None, ylabel=None):
+    plt.scatter(df[df['bot'] == 0][x_attr],
+                df[df['bot'] == 0][y_attr], color='g', marker='*', label='Non-bot user')
+    plt.scatter(df[df['bot'] == 1][x_attr],
+                df[df['bot'] == 1][y_attr], color='r', marker='2', label='Bot user')
+
+    _scatter_show(df, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
 def lang_scatter(df, attr, log=False, path=None):
     plt.figure(figsize=(10, 5))
-    plt.scatter(df[df['bot'] == 0]['lang'],
-                df[df['bot'] == 0][attr], color='g', marker='*', label='Non-bot user')
-    plt.scatter(df[df['bot'] == 1]['lang'],
-                df[df['bot'] == 1][attr], color='r', marker='2', label='Bot user')
-    plt.xlabel('lang')
-    plt.ylabel(attr)
-    if log:
-        plt.yscale('log')
-    plt.legend()
-    if path is None:
-        plt.show()
-    else:
-        plt.savefig(path)
+    bot_scatter(df, 'lang', attr, log, path)
 
