@@ -73,6 +73,14 @@ def eval_correlation(df_corr, method='pearson', path=None, figsize=(10,10)):
     else:
         plt.show()
 
+def heatmap(matrix, path=None, figsize=(10,10)):
+    fig, ax = plt.subplots(figsize=figsize)  # Sample figsize in inches
+    sn.heatmap(matrix, annot=True, linewidths=.5, ax=ax)
+    if path is not None:
+        plt.savefig(path)
+    else:
+        plt.show()
+
 #Plot a histogram w.r.t. a single attribute passed as parameter.
 def plot_hist(dataframe, attribute_name, log=False, path=None):
     df = pd.DataFrame()
