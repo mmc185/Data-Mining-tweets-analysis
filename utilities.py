@@ -49,10 +49,12 @@ def len_with_int(x):
 
 # Plot a boxplot w.r.t. a single attribute passed as parameter.
 def plot_boxplot(df, col, log=False, path=None):
+    df_copy = df.copy()
+    df_copy[col] = df_copy[col].fillna(-1.0)
+
     # Plot the distribution of the indicated column
     plt.title(col)
-    plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
-    plt.title(col)
+    plt.boxplot(df_copy[df_copy[col] != -1.0][col], showmeans=True)
     if log:
         plt.yscale('log')
 
@@ -143,18 +145,30 @@ def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabe
     :param date_axis: None, 'x', 'y', or 'both'. If there is some timestamp dimension, pass the respective axis to convert the ticks in human readable format.
     :return:
     """
-    plt.scatter(df[x_attr], df[y_attr], color='g', marker='*')
-    _scatter_show(df, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
+
+    df_copy = df[[x_attr, y_attr]].copy()
+
+    if log:
+        df_copy[y_attr] = df_copy[y_attr].replace(0, 0.5)
+
+    plt.scatter(df_copy[x_attr], df_copy[y_attr], color='g', marker='*')
+    _scatter_show(df_copy, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
 
 
 def bot_scatter(df, x_attr, y_attr, log=False, path=None, date_axis=None, xlabel=None, ylabel=None):
-    plt.scatter(df[df['bot'] == 0][x_attr],
-                df[df['bot'] == 0][y_attr], color='g', marker='*', label='Non-bot user')
-    plt.scatter(df[df['bot'] == 1][x_attr],
-                df[df['bot'] == 1][y_attr], color='r', marker='2', label='Bot user')
 
-    _scatter_show(df, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
+    df_copy = df[[x_attr, y_attr, 'bot']].copy()
+
+    if log:
+        df_copy[y_attr] = df_copy[y_attr].replace(0, 0.5)
+
+    plt.scatter(df_copy[df_copy['bot'] == 0][x_attr],
+                df_copy[df_copy['bot'] == 0][y_attr], color='g', marker='*', label='Non-bot user')
+    plt.scatter(df_copy[df_copy['bot'] == 1][x_attr],
+                df_copy[df_copy['bot'] == 1][y_attr], color='r', marker='2', label='Bot user')
+
+    _scatter_show(df_copy, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
 def lang_scatter(df, attr, log=False, path=None):
     plt.figure(figsize=(10, 5))
