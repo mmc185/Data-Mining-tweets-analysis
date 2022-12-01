@@ -49,9 +49,12 @@ def len_with_int(x):
 
 # Plot a boxplot w.r.t. a single attribute passed as parameter.
 def plot_boxplot(df, col, log=False, path=None):
+    df_copy = df.copy()
+    df_copy[col] = df_copy[col].fillna(-1.0)
+
     # Plot the distribution of the indicated column
     plt.title(col)
-    plt.boxplot(df[df[col] != -1.0][col], showmeans=True)
+    plt.boxplot(df_copy[df_copy[col] != -1.0][col], showmeans=True)
     if log:
         plt.yscale('log')
 
