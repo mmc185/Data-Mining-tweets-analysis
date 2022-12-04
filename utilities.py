@@ -1,9 +1,25 @@
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 import math
 import pandas as pd
 import seaborn as sn
 
+def get_path():
+    DATA_PATH = 'G:/Shared drives/DM_tweets/data/'
+    if not os.path.exists(DATA_PATH):
+        DATA_PATH = 'G:/Drive condivisi/DM_tweets/data/'
+        if not os.path.exists(DATA_PATH):
+            os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
+
+            from google.colab import drive
+
+            drive.mount('/content/drive')
+
+            DATA_PATH = '/content/drive/Shareddrives/DM_tweets/data/'
+            os.system('cmd /k"cp /content/drive/MyDrive/code/utilities.py ."')
+
+    return DATA_PATH
 
 def to_float(x):
     try:
