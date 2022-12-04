@@ -1,28 +1,6 @@
-import os
-
-import pandas as pd
-import math
-import numpy as np
-from matplotlib import pyplot as plt
-from numpy import logical_and as land, logical_or as lor
-import seaborn as sn
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.cluster import KMeans
 from sklearn import metrics
-from sklearn.cluster import DBSCAN
-from scipy.spatial.distance import pdist, squareform
-from scipy.stats import mode
-from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
-from itertools import combinations
-from sklearn.cluster import AgglomerativeClustering
-from tqdm import tqdm
-from pyclustering.cluster.xmeans import xmeans
-from pyclustering.cluster import cluster_visualizer
 from utilities import *
-from sklearn.decomposition import PCA
-from utilities import heatmap
-from clusteringUtilities import *
-from prettytable import PrettyTable
+
 
 def get_metrics(data_scaled, labels, print_out=True):
     silohuette = metrics.silhouette_score(data_scaled, labels)
