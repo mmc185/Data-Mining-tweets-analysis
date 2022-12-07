@@ -94,7 +94,7 @@ def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target
     except KeyError:
         return None, None
 
-    print(f'Best compo:\n\tparams: {best_result["params"]}'
+    print(f'Best combo:\n\tparams: {best_result["params"]}'
           f'\n\tmean_train_recall: {best_result["mean_train_recall"]}'
           f'\n\tmean_train_precision: {best_result["mean_train_precision"]}'
           f'\n\tmean_train_f1: {best_result["mean_train_f1"]}'
