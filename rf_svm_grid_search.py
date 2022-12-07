@@ -2,7 +2,7 @@ from classification_utilities import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 
-n_jobs = 6
+n_jobs = 40
 tr, ts, tr_target, ts_target = prepare_data()
 print(f'Number of samples in Training set:', len(tr))
 print(f'Number of samples in Test set:', len(ts))
@@ -18,7 +18,7 @@ parameters = {
     "max_leaf_nodes":[None] + list(range(1,10,2)),
     "min_impurity_decrease": 0.1 * np.array(range(1,5))
 }
-rf, results_df = grid_search(RandomForestClassifier, parameters, 'random_forest', tr, ts, tr_target, ts_target, n_jobs=40)
+rf, results_df = grid_search(RandomForestClassifier, parameters, 'random_forest', tr, ts, tr_target, ts_target, n_jobs=n_jobs)
 
 
 parameters_linear = {
@@ -44,4 +44,4 @@ parameters_rbf_sigmoid = {
     'gamma': gamma_range
 }
 
-grid_search(SVC, [parameters_linear,parameters_poly,parameters_rbf_sigmoid], 'svm', tr, ts, tr_target, ts_target, n_jobs=4)
+grid_search(SVC, [parameters_linear,parameters_poly,parameters_rbf_sigmoid], 'svm', tr, ts, tr_target, ts_target, n_jobs=n_jobs)
