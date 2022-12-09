@@ -73,6 +73,14 @@ def prepare_data():
     return train_test_split(df_merge.drop(columns='bot'), df_merge['bot'], stratify=df_merge['bot'], test_size=0.20)
 
 
+def test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_path):
+    best_classifier = classifier_class(**best_params)
+    best_classifier.fit(tr, tr_target)
+    ts_pred = best_classifier.predict(ts)
+    get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
+    confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
+    return best_classifier
+
 def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6):
     out_path = f'classification/{name}/'
     try:
@@ -95,17 +103,16 @@ def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target
         return None, None
 
     print(f'Best combo:\n\tparams: {best_result["params"]}'
+          f'\n\tmean_train_accuracy: {best_result["mean_train_accuracy"]}'
           f'\n\tmean_train_recall: {best_result["mean_train_recall"]}'
           f'\n\tmean_train_precision: {best_result["mean_train_precision"]}'
           f'\n\tmean_train_f1: {best_result["mean_train_f1"]}'
+          f'\n\tmean_val_accuracy: {best_result["mean_test_accuracy"]}'
           f'\n\tmean_val_recall: {best_result["mean_test_recall"]}'
           f'\n\tmean_val_precision: {best_result["mean_test_precision"]}'
           f'\n\tmean_val_f1: {best_result["mean_test_f1"]}\n')
     best_params = best_result['params']
-    best_classifier = classifier_class(**best_params)
-    best_classifier.fit(tr, tr_target)
-    ts_pred = best_classifier.predict(ts)
-    get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
-    confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
+
+    best_classifier = test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_path)
 
     return best_classifier, results_df
