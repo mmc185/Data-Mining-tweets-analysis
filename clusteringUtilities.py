@@ -23,7 +23,7 @@ def sse(df, labels):
 def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filter=None, figsize=(7,5)):
     plt.figure(figsize=figsize)
     #cent = scaler.inverse_transform(kmeans.cluster_centers_)
-    plt.scatter(df[attr1], df[attr2], c=c_labels)
+    scatter = plt.scatter(df[attr1], df[attr2], c=c_labels)
 
     if filter:
         df = df.loc[filter]
@@ -33,7 +33,7 @@ def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filte
         plt.scatter(centroids[:, 0], centroids[:, 1], s=100, marker='.', c='r')
 
     plt.tick_params(axis='both', which='major')
-
+    plt.legend(*scatter.legend_elements())
     plt.savefig(filename)
 
 def plots(df, labels, path=None, centroids=None, attributes=None):
@@ -46,7 +46,7 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
         pass
 
     # Line plot
-    plt.figure(figsize=(50, 5))
+    plt.figure(figsize=(40, 4))
     for label in np.unique(labels):
         if centroids is None:
             cent = df[attributes][labels == label].median()
@@ -89,7 +89,7 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     plt.xlabel('Cluster')
     plt.ylabel('lang')
     plt.yscale('log')
-    plt.legend(prop={'size': 15})
+    plt.legend(prop={'size': 15}, bbox_to_anchor=(1,0), loc="lower left")
     plt.savefig(path + "/lang_characterization.png")
 
     # Plot w.r.t. bots
@@ -100,5 +100,5 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     bot_ct.plot(kind='bar', stacked=False, ax=ax)
     plt.xlabel('Cluster')
     plt.ylabel('bot')
-    plt.legend(prop={'size': 30})
+    plt.legend(prop={'size': 30}, labels=['genuine user','bot'])
     plt.savefig(path + "/bot_characterization.png")
