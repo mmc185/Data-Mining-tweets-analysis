@@ -46,7 +46,7 @@ def discretize_column(df, column_name):
     df[column_name + '_discr'] = df[column_name].apply(lambda x: d[x])
 
 
-def prepare_data():
+def prepare_data(scaler=None):
     DATA_PATH = get_path()
     df_indicators = pd.read_csv(DATA_PATH + 'indicators_clean.csv', sep='#')
     # df_tweets_ind = pd.read_csv(DATA_PATH+'tweets_with_indicators.csv', sep='#')
@@ -69,6 +69,10 @@ def prepare_data():
     df_merge.replace(-np.inf, np.finfo(np.float32).min, inplace=True)
 
     df_merge.replace(np.inf, np.finfo(np.float32).max, inplace=True)
+
+    if scaler is not None:
+        df_merge_scaled = scaler.fit_transform(df_merge.values)
+        df_merge = pd.DataFrame(df_merge_scaled, columns=df_merge.columns)
 
     return train_test_split(df_merge.drop(columns='bot'), df_merge['bot'], stratify=df_merge['bot'], test_size=0.20)
 
@@ -97,7 +101,7 @@ def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target
     results_df.to_csv(f"classification/{name}/gs_results.csv")
     try:
         best_result = results_df.loc[results_df.mean_test_f1.idxmax()][
-            ['params', 'mean_train_recall', 'mean_train_precision', 'mean_train_f1',
+            ['params', 'mean_train_accuracy','mean_train_recall', 'mean_train_precision', 'mean_train_f1','mean_test_accuracy',
              'mean_test_recall', 'mean_test_precision', 'mean_test_f1']]
     except KeyError:
         return None, None
