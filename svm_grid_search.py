@@ -3,7 +3,7 @@ from classification_utilities import *
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.svm import SVC
 
-n_jobs = 6
+n_jobs = 40
 tr, ts, tr_target, ts_target = prepare_data(scaler=MinMaxScaler())
 print(f'Number of samples in Training set:', len(tr))
 print(f'Number of samples in Test set:', len(ts))
@@ -12,7 +12,7 @@ parameters_linear = {
     'C': [10**(exp) for exp in [-2,-1,0,1,2,3,4]],
     'kernel': ['linear'],
     'shrinking': [True, False],
-    'tol': [1e-8, 1e-4, 1e-2, 1e-1],
+    'tol': [1e-2],
     'random_state': [42]
 }
 
@@ -31,4 +31,4 @@ parameters_rbf_sigmoid = {
     'gamma': gamma_range
 }
 
-grid_search(SVC, [parameters_linear], 'svm', tr, ts, tr_target, ts_target, n_jobs=n_jobs)
+grid_search(SVC, [parameters_linear,parameters_poly,parameters_rbf_sigmoid], 'svm', tr, ts, tr_target, ts_target, n_jobs=n_jobs)
