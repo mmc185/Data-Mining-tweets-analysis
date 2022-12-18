@@ -97,6 +97,7 @@ def test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_p
     best_classifier = classifier_class(**best_params)
     best_classifier.fit(tr, tr_target)
     ts_pred = best_classifier.predict(ts)
+    print("Test set metrics: ")
     get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
     confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
     return best_classifier
