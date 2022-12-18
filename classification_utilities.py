@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from cv2 import stereo_PropagationParameters
 from sklearn import metrics
 import statistics
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate
 import pandas as pd
 from utilities import get_path
 import os
-from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.feature_selection import SelectKBest, chi2, RFECV, SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 
 def get_metrics(target, pred, target_labels, set_kind, verbose=True):
@@ -59,7 +62,7 @@ def prepare_data(scaler=None, k=0):
         df_users.id = df_users.id.astype(str)
         df_merge = df_users.merge(df_indicators, left_on='id', right_on='user_id', how='left')
     else:
-        df_merge = pd.read_csv(DATA_PATH + "data_scaled_for_clustering.csv",sep='#')
+        df_merge = pd.read_csv(DATA_PATH + "data_scaled_for_clustering.csv", sep='#')
 
     # Drop variables which aren't useful for classification purposes
     df_merge.drop(columns=['id', 'name', 'user_subscription', 'user_id'], inplace=True)
@@ -79,9 +82,10 @@ def prepare_data(scaler=None, k=0):
         df_merge_scaled = scaler.fit_transform(df_merge.values)
         df_merge = pd.DataFrame(df_merge_scaled, columns=df_merge.columns)
 
-    dev, test, dev_labels, test_labels = train_test_split(df_merge.drop(columns='bot'), df_merge['bot'], stratify=df_merge['bot'], test_size=0.20)
+    dev, test, dev_labels, test_labels = train_test_split(df_merge.drop(columns='bot'), df_merge['bot'],
+                                                          stratify=df_merge['bot'], test_size=0.20)
 
-    if k>0:
+    if k > 0:
         selector = SelectKBest(chi2, k=k)
         dev_sel = selector.fit_transform(dev, dev_labels)
         test_sel = selector.transform(test)
@@ -93,31 +97,46 @@ def prepare_data(scaler=None, k=0):
     return dev, test, dev_labels, test_labels
 
 
-def test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_path):
-    best_classifier = classifier_class(**best_params)
-    best_classifier.fit(tr, tr_target)
-    ts_pred = best_classifier.predict(ts)
-    get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
-    confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
-    return best_classifier
-
-def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6, k=4):
+def grid_search_with_feature_selection(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6,
+                                       folds=4, n_features=25):
     out_path = f'classification/{name}/'
-    try:
-        os.mkdir(out_path)
-    except FileExistsError:
-        pass
 
-    gs = GridSearchCV(classifier_class(), param_grid=parameters, scoring=['accuracy', 'precision', 'recall', 'f1'],
-                      verbose=3,
-                      refit=False, n_jobs=n_jobs, return_train_score=True, cv=k)
+    # Different criteria for feature selection
+    feature_selection_list = [RFECV(estimator=LogisticRegression(max_iter=500), step=1, cv=folds, scoring='accuracy',
+                                    min_features_to_select=5),
+                              SelectKBest(chi2, k=n_features),
+                              SelectFromModel(estimator=RandomForestClassifier())]
 
-    gs.fit(tr, tr_target)
-    results_df = pd.DataFrame(gs.cv_results_)
-    results_df.to_csv(f"classification/{name}/gs_results.csv")
+    for fs in feature_selection_list:
+
+        # Apply Feature Selection
+        tr_sel = fs.fit_transform(tr, tr_target)
+        ts_sel = fs.transform(ts)
+        fs_name = str(type(fs).__name__)
+
+        print(f'Chosen columns of {fs_name}:', tr.columns[fs.get_support()])
+
+        # Perform grid search and save best model
+        results_df = grid_search(classifier_class, parameters, f"{name}/{fs_name}", tr_sel, tr_target,
+                                 n_jobs=n_jobs, k=folds)
+
+        results_df['Feature_Selector'] = [fs_name] * len(results_df)
+        results_df['Chosen_columns'] = [tr.columns[fs.get_support()]] * len(results_df)
+        results_df.to_csv(f"{out_path}/{fs_name}/gs_results.csv")
+
+        test_best(classifier_class, tr_sel, ts_sel, tr_target, ts_target, out_path=f"{out_path}/{fs_name}/",
+                  results_df=results_df)
+
+
+def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_df=None, in_path=None):
+
+    if results_df is None and in_path is not None:
+        results_df = pd.read_csv(in_path)
+
     try:
         best_result = results_df.loc[results_df.mean_test_f1.idxmax()][
-            ['params', 'mean_train_accuracy','mean_train_recall', 'mean_train_precision', 'mean_train_f1','mean_test_accuracy',
+            ['params', 'mean_train_accuracy', 'mean_train_recall', 'mean_train_precision', 'mean_train_f1',
+             'mean_test_accuracy',
              'mean_test_recall', 'mean_test_precision', 'mean_test_f1']]
     except KeyError:
         return None, None
@@ -133,6 +152,28 @@ def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target
           f'\n\tmean_val_f1: {best_result["mean_test_f1"]}\n')
     best_params = best_result['params']
 
-    best_classifier = test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_path)
+    best_classifier = classifier_class(**best_params)
+    best_classifier.fit(tr, tr_target)
+    ts_pred = best_classifier.predict(ts)
+    print("Test set metrics: ")
+    get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
+    confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
+    return best_classifier
 
-    return best_classifier, results_df
+
+def grid_search(classifier_class, parameters, name, tr, tr_target, n_jobs=6, k=4):
+    out_path = f'classification/{name}'
+    try:
+        os.mkdir(out_path)
+    except FileExistsError:
+        pass
+
+    gs = GridSearchCV(classifier_class(), param_grid=parameters, scoring=['accuracy', 'precision', 'recall', 'f1'],
+                      verbose=3,
+                      refit=False, n_jobs=n_jobs, return_train_score=True, cv=k)
+
+    gs.fit(tr, tr_target)
+    results_df = pd.DataFrame(gs.cv_results_)
+    results_df.to_csv(f"{out_path}/gs_results.csv")
+
+    return results_df
