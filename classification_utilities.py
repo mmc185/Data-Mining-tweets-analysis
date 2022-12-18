@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, cross_valida
 import pandas as pd
 from utilities import get_path
 import os
+from sklearn.feature_selection import SelectKBest, chi2
 
 
 def get_metrics(target, pred, target_labels, set_kind, verbose=True):
@@ -46,15 +47,19 @@ def discretize_column(df, column_name):
     df[column_name + '_discr'] = df[column_name].apply(lambda x: d[x])
 
 
-def prepare_data(scaler=None):
+def prepare_data(scaler=None, k=0):
     DATA_PATH = get_path()
-    df_indicators = pd.read_csv(DATA_PATH + 'indicators_clean.csv', sep='#')
-    # df_tweets_ind = pd.read_csv(DATA_PATH+'tweets_with_indicators.csv', sep='#')
-    df_users = pd.read_csv(DATA_PATH + 'users_clean.csv', sep='#')
-    # df_merge = pd.read_csv(DATA_PATH + 'data_scaled_for_clustering.csv', sep='#')
 
-    df_users.id = df_users.id.astype(str)
-    df_merge = df_users.merge(df_indicators, left_on='id', right_on='user_id', how='left')
+    if scaler is not None:
+        df_indicators = pd.read_csv(DATA_PATH + 'indicators_clean.csv', sep='#')
+        # df_tweets_ind = pd.read_csv(DATA_PATH+'tweets_with_indicators.csv', sep='#')
+        df_users = pd.read_csv(DATA_PATH + 'users_clean.csv', sep='#')
+        # df_merge = pd.read_csv(DATA_PATH + 'data_scaled_for_clustering.csv', sep='#')
+
+        df_users.id = df_users.id.astype(str)
+        df_merge = df_users.merge(df_indicators, left_on='id', right_on='user_id', how='left')
+    else:
+        df_merge = pd.read_csv(DATA_PATH + "data_scaled_for_clustering.csv",sep='#')
 
     # Drop variables which aren't useful for classification purposes
     df_merge.drop(columns=['id', 'name', 'user_subscription', 'user_id'], inplace=True)
@@ -74,7 +79,18 @@ def prepare_data(scaler=None):
         df_merge_scaled = scaler.fit_transform(df_merge.values)
         df_merge = pd.DataFrame(df_merge_scaled, columns=df_merge.columns)
 
-    return train_test_split(df_merge.drop(columns='bot'), df_merge['bot'], stratify=df_merge['bot'], test_size=0.20)
+    dev, test, dev_labels, test_labels = train_test_split(df_merge.drop(columns='bot'), df_merge['bot'], stratify=df_merge['bot'], test_size=0.20)
+
+    if k>0:
+        selector = SelectKBest(chi2, k=k)
+        dev_sel = selector.fit_transform(dev, dev_labels)
+        test_sel = selector.transform(test)
+
+        print(dev.columns[selector.get_support()])
+
+        return dev_sel, test_sel, dev_labels, test_labels
+
+    return dev, test, dev_labels, test_labels
 
 
 def test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_path):
@@ -85,7 +101,7 @@ def test_best(classifier_class, best_params, tr, ts, tr_target, ts_target, out_p
     confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
     return best_classifier
 
-def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6):
+def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6, k=4):
     out_path = f'classification/{name}/'
     try:
         os.mkdir(out_path)
@@ -94,7 +110,7 @@ def grid_search(classifier_class, parameters, name, tr, ts, tr_target, ts_target
 
     gs = GridSearchCV(classifier_class(), param_grid=parameters, scoring=['accuracy', 'precision', 'recall', 'f1'],
                       verbose=3,
-                      refit=False, n_jobs=n_jobs, return_train_score=True)
+                      refit=False, n_jobs=n_jobs, return_train_score=True, cv=k)
 
     gs.fit(tr, tr_target)
     results_df = pd.DataFrame(gs.cv_results_)
