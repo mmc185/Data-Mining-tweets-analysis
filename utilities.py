@@ -12,14 +12,16 @@ def get_path():
         if not os.path.exists(DATA_PATH):
             DATA_PATH = '../DM_data/'
             if not os.path.exists(DATA_PATH):
-                os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
+                DATA_PATH = 'H:/Drive condivisi/DM_tweets/data/'
+                if not os.path.exists(DATA_PATH):
+                    os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
 
-                from google.colab import drive
+                    from google.colab import drive
 
-                drive.mount('/content/drive')
+                    drive.mount('/content/drive')
 
-                DATA_PATH = '/content/drive/Shareddrives/DM_tweets/data/'
-                os.system('cmd /k"cp /content/drive/MyDrive/code/utilities.py ."')
+                    DATA_PATH = '/content/drive/Shareddrives/DM_tweets/data/'
+                    os.system('cmd /k"cp /content/drive/MyDrive/code/utilities.py ."')
 
     return DATA_PATH
 
