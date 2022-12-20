@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from cv2 import stereo_PropagationParameters
+#from cv2 import stereo_PropagationParameters
 from sklearn import metrics
 import statistics
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate
@@ -171,7 +171,6 @@ def grid_search(classifier_class, parameters, name, tr, tr_target, n_jobs=6, k=4
     gs = GridSearchCV(classifier_class(), param_grid=parameters, scoring=['accuracy', 'precision', 'recall', 'f1'],
                       verbose=3,
                       refit=False, n_jobs=n_jobs, return_train_score=True, cv=k)
-
     gs.fit(tr, tr_target)
     results_df = pd.DataFrame(gs.cv_results_)
     results_df.to_csv(f"{out_path}/gs_results.csv")
