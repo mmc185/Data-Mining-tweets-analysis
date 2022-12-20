@@ -102,9 +102,9 @@ def grid_search_with_feature_selection(classifier_class, parameters, name, tr, t
     out_path = f'classification/{name}/'
 
     # Different criteria for feature selection
-    feature_selection_list = [RFECV(estimator=LogisticRegression(max_iter=500), step=1, cv=folds, scoring='accuracy',
+    feature_selection_list = [SelectKBest(chi2, k=n_features),
+                              RFECV(estimator=LogisticRegression(max_iter=500), step=1, cv=folds, scoring='accuracy',
                                     min_features_to_select=5),
-                              SelectKBest(chi2, k=n_features),
                               SelectFromModel(estimator=RandomForestClassifier())]
 
     for fs in feature_selection_list:
