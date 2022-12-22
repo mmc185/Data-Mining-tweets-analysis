@@ -147,3 +147,5 @@ vcs.xml
 
 /data
 /.idea
+
+venv
