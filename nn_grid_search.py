@@ -15,7 +15,7 @@ parameters = {
     "batch_size": [8, 16], #, 32],
     "learning_rate_init": [1e-2, 1e-3, 5e-3],
     "learning_rate": ['adaptive'],  # 'costant'],
-    "momentum": [0.0, 0.2] #, 0.4, 0.6, 0.8]
+    "momentum": [0.4] #, 0.6] #, 0.0, 0.2, 0.8]
 }
 
 #results_df = grid_search(MLPClassifier, parameters, 'nn', tr, tr_target, n_jobs=2)
