@@ -1,5 +1,4 @@
 from classification_utilities import *
-import pandas as dp
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import MinMaxScaler
 
