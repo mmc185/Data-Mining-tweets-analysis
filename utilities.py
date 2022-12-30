@@ -70,7 +70,7 @@ def len_with_int(x):
 
 
 # Plot a boxplot w.r.t. a single attribute passed as parameter.
-def plot_boxplot(df, col, log=False, path=None):
+def plot_boxplot(df, col, log=False, path=None, date=False):
     df_copy = df.copy()
     df_copy[col] = df_copy[col].fillna(-1.0)
 
@@ -79,6 +79,9 @@ def plot_boxplot(df, col, log=False, path=None):
     plt.boxplot(df_copy[df_copy[col] != -1.0][col], showmeans=True)
     if log:
         plt.yscale('log')
+
+    if date:
+        date_labels(df, col, axis='y')
 
     if path is None:
         plt.show()
@@ -104,7 +107,7 @@ def heatmap(matrix, path=None, figsize=(10,10)):
         plt.show()
 
 #Plot a histogram w.r.t. a single attribute passed as parameter.
-def plot_hist(dataframe, attribute_name, log=False, path=None):
+def plot_hist(dataframe, attribute_name, log=False, path=None, date=False):
     df = pd.DataFrame()
 
     if log:
@@ -118,6 +121,13 @@ def plot_hist(dataframe, attribute_name, log=False, path=None):
         df[attribute_name] = dataframe[attribute_name].values
     n_bins = math.ceil(np.log2(len(df[attribute_name])) + 1) # Sturges' rule
     df.hist(attribute_name, bins=n_bins, log=True)
+
+    if date:
+        x_ticks = plt.xticks()
+        plt.xticks(x_ticks[0], pd.to_datetime(x_ticks[0]).to_period('M'))
+        #date_labels(df, attribute_name, axis='x')
+
+
     if path is not None:
         plt.savefig(path)
 
