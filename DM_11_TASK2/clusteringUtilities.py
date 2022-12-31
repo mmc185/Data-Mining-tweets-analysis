@@ -20,10 +20,10 @@ def sse(df, labels):
         sum += np.sum(row_sums)
     return sum
 
-def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filter=None, figsize=(7,5)):
+def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filter=None, figsize=(8,8)):
     plt.figure(figsize=figsize)
     #cent = scaler.inverse_transform(kmeans.cluster_centers_)
-    scatter = plt.scatter(df[attr1], df[attr2], c=c_labels)
+    scatter = plt.scatter(df[attr1], df[attr2], c=c_labels, s=10)
 
     if filter:
         df = df.loc[filter]
@@ -47,6 +47,7 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
 
     # Line plot
     plt.figure(figsize=(40, 4))
+
     for label in np.unique(labels):
         if centroids is None:
             cent = df[attributes][labels == label].median()
@@ -83,13 +84,15 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
 
     # Plot w.r.t. languages
     lang_ct = pd.crosstab(labels, df['lang'])
-
+    to_agg = lang_ct.columns[lang_ct.sum() < 30]
+    lang_ct['others'] = lang_ct[to_agg].sum(axis=1)
+    lang_ct.drop(columns = to_agg, inplace=True)
     fig, ax = plt.subplots(figsize=(24, 8))
     lang_ct.plot(kind='bar', stacked=False, ax=ax)
     plt.xlabel('Cluster')
     plt.ylabel('lang')
     plt.yscale('log')
-    plt.legend(prop={'size': 15}, bbox_to_anchor=(1,0), loc="lower left")
+    plt.legend(prop={'size': 15}, loc="upper right")
     plt.savefig(path + "/lang_characterization.png")
 
     # Plot w.r.t. bots
@@ -100,5 +103,5 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     bot_ct.plot(kind='bar', stacked=False, ax=ax)
     plt.xlabel('Cluster')
     plt.ylabel('bot')
-    plt.legend(prop={'size': 30}, labels=['genuine user','bot'])
+    plt.legend(prop={'size': 15}, loc="upper right",  labels=['genuine user','bot'])
     plt.savefig(path + "/bot_characterization.png")

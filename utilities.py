@@ -70,7 +70,7 @@ def len_with_int(x):
 
 
 # Plot a boxplot w.r.t. a single attribute passed as parameter.
-def plot_boxplot(df, col, log=False, path=None, date=False):
+def plot_boxplot(df, col, log=False, path=None, date=False, timedelta=False):
     df_copy = df.copy()
     df_copy[col] = df_copy[col].fillna(-1.0)
 
@@ -82,6 +82,10 @@ def plot_boxplot(df, col, log=False, path=None, date=False):
 
     if date:
         date_labels(df, col, axis='y')
+
+    if timedelta:
+        timedelta_labels(df, col, axis='y')
+
 
     if path is None:
         plt.show()
@@ -143,11 +147,32 @@ def date_labels(df, attr, format='M', axis='x', n_ticks = 6):
     """
     # create indices and labels for the plot. This is done because if you pass the entire sequence it takes years to compute
     indices = [df[attr].min() + q*(df[attr].max()-df[attr].min()) for q in np.array(list(range(0,n_ticks)))/(n_ticks-1)]
-
+    labels = pd.to_datetime(indices).to_period(format)
     if axis == 'x':
-        plt.xticks(indices, labels=pd.to_datetime(indices).to_period(format))
+        plt.xticks(indices, labels= labels)
     if axis == 'y':
-        plt.yticks(indices, labels=pd.to_datetime(indices).to_period(format))
+        plt.yticks(indices, labels= labels)
+
+def timedelta_labels(df, attr, format='M', axis='x', n_ticks = 6):
+    """
+    Utility function to put human readable labels for timestamps instead of seconds.
+    :param df:
+    :param attr:
+    :param format:
+    :param axes: 'x','y', the axes where to convert the date labels
+    :return:
+    """
+    # create indices and labels for the plot. This is done because if you pass the entire sequence it takes years to compute
+    indices = [df[attr].min() + q*(df[attr].max()-df[attr].min()) for q in np.array(list(range(0,n_ticks)))/(n_ticks-1)]
+
+    labels = pd.to_timedelta(indices).days
+    axis_label = "days"
+    if axis == 'x':
+        plt.xlabel(axis_label)
+        plt.xticks(indices, labels=labels)
+    if axis == 'y':
+        plt.ylabel(axis_label)
+        plt.yticks(indices, labels=labels)
 
 def _scatter_show(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
     if xlabel is None:
@@ -206,7 +231,7 @@ def bot_scatter(df, x_attr, y_attr, log=False, path=None, date_axis=None, xlabel
     plt.scatter(df_copy[df_copy['bot'] == 0][x_attr],
                 df_copy[df_copy['bot'] == 0][y_attr], color='g', marker='*', label='Non-bot user')
     plt.scatter(df_copy[df_copy['bot'] == 1][x_attr],
-                df_copy[df_copy['bot'] == 1][y_attr], color='r', marker='2', label='Bot user')
+                df_copy[df_copy['bot'] == 1][y_attr], color='r', marker='2', label='Bot user', alpha=0.5)
 
     _scatter_show(df_copy, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
