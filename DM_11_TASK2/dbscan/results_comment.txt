@@ -1,0 +1,37 @@
+Cluster -1: As we can expct from a noise cluster, most of the features have average values.
+	Time aspects: 
+	Community response:
+	Writing style:
+
+
+cluster 0: 2,5k bots, 1k users. Average statuses count and n_tweets.
+	Time aspects: least active users of 2019, recently subscribed.Mild tweeting regularity and density.
+	Community response: Lowly retweeted, highly replied, lowly favorited
+	Writing style: Average tweet length, lowest use of hashtags, high use of urls, average use of mentions.
+
+
+cluster 1: very similar to cluster 0. Low 
+	Time aspects: Users are the ones active only in 2018. Low density and tweeting regularity.
+	Community response: Mildly-lowly retweets, Lowly replied, lowly favorited.
+	Writing style: Low use of hashtags, high use of urls, high number of mentions.
+
+
+cluster 2: Only bots. Average statuses count but high n_tweets
+	Time aspects: Active in 2019 only. High tweets density.Very high tweeting regularity.
+	Community response: Averagely retweets, highly replied, highly favorited. High tweeting regularity.
+	Writing style: Longest tweets. Low number of hashtags, url and mentions. 
+
+
+cluster 3: Highest statuses_count, hig n_tweets.
+	Time aspects: Active in 2020 only. Medium-high tweeting regularity.
+	Community response: Highly retweeted, highly replied, highly favorited.
+	Writing style: Average-low number of hashtags and urls, high number of mentions.
+
+
+cluster 4: Only bots. Highest statuses count and n_tweets.
+	Time aspects: Most active bots in 2019. Highest tweeting regularity.
+	Community response: Lowly retweeted, highly replied, lowly favorited.
+	Writing style: High use of hashtags, urls and mentions
+
+
+cluster 5: Users with no tweets (but why the means are that high

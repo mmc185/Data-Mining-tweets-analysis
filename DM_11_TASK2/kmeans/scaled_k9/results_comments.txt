@@ -1,0 +1,59 @@
+Kmeans, k=9
+Cluster 0: Bot only Only english and italian. 
+	Time aspects: highest statuses count and n_tweets, active only in 2019, high entropy in the publication date.
+	Community response: low retweet count, lot of replies, small favorites
+	Writing style: Long tweets,low use of special chars, few tweets with a lot of hashtags (high mean, high std, low sum), lot of urls and mentions.
+	Highest tweeting regularity.
+
+Cluster 1: mixed users and bots, with low statuses_count, low n_tweets
+	Time aspects: publishing from 2015 to 2018, in a restricted time window (low publication_date_std and entropy),
+		few tweets per day, sparse publication (low tweets desnsity), lowest tweeting_regularity.
+	Community response: with a small amount of retweets, reply and favorites.
+	Writing style: short tweet length, Average use of hashtags, high use of urls and mentions.
+	In short: lowly active users
+
+Cluster 2: users only.
+	High statuses_count and n_tweets, 
+	Time aspects: recently subscripted, active mainly in 2020, a little in 2019. High tweeting density and average regularity.
+	Community response: average retweet count, high number of replies,
+	Writing style: short tweets, Low use of special chars, low use of hashtags, high but variable use of mentions.
+	These are characteristics that we expect from human users.
+	
+Cluster 3: 2k bot, 1k genuine. Low number of statuses count and n_tweets. 
+	Time aspects: Recently subscribpted, Active only in 2019, irrgular publication schema.
+	Community response: low retweet, high reply, low favorite.
+	Writing style: short tweets, low special chars, lowest use of hashtags, highest use of urls, medium-high use of mentions.
+
+Cluster 4: 800 bots, 400 users. Low statuses counts and n_tweets.
+	Time aspects: active mainly in 2017 and 2018, barely active in 2019 and 2020. Low tweeting density, low regularity.
+	Community response: high retweet, small reply, high favorite mean.
+	Writing style: low hashtags, average use of urls, average use of mentions.
+
+Cluster 5: Only genuine users. high statuses_count, high n_tweets.
+	Time aspects: Active in 2019 and 2020, high tweet density, mildly regular tweeting
+	Community response: High retweet, high reply, medium-high favorite
+	Writing style: Average length tweets, medium-high hashtags and urls, high use of mentions 
+
+Cluster 6: Only genuine users. Highest statuses count, high n_tweets
+	Time aspects: Active in 2020 only, high tweet density medium-high tweeting regularity
+	Community response: Highly retweets, highly replied, medium-higly favorited.
+	Writing style: medium-low tweets length, few hashtags per tweet, average number of urls, high usage of mentions
+
+
+Cluster 7: Only bots. 1000 italian, 100 english. Average statuses_count but high n_tweets. Highest max_daily tweets.
+	Time aspects: Active mainly in 2019. Barely active in 2018. High tweeting regularity.
+	Community response: average retweet, high reply, high favorite.
+	Writing style: Longest tweets. Low use of hashtags, lowest urls mean and std, lowest mentions mean and std.
+
+
+Cluster 8: Mostly genuine users. Medium-high statuses count and n_tweets.
+	Time aspects: This cluster seems to group the more active users during the years before 2019 and the ones subscribed in the first years of the dataset. 
+		They have average density, average regularity
+	Community response: Highly retweets, highly replied, averagely favorited.
+	Writing style: Average tweets length,medium-high use of hashtags, average use of urls, high use of mentions
+
+Kmeans, k=8
+The result is quite similar, in fact is the same but the cluster 4 is the merge of the cluster 2 and 6 for k=9.
+
+Kmeans, k=10
+Wrt k=9, cluster 1 was split in cluster 3 and 9. Cluster 3 contains the least active users of the set. Proportions of bot/genuine are kept.
