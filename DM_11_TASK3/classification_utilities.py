@@ -99,7 +99,7 @@ def prepare_data(scaler=None, k=0):
 
 def grid_search_with_feature_selection(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6,
                                        folds=4, n_features=25):
-    out_path = f'classification/{name}/'
+    out_path = f'results/{name}/'
 
     # Different criteria for feature selection
     feature_selection_list = [SelectKBest(chi2, k=n_features),
@@ -162,7 +162,7 @@ def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_
 
 
 def grid_search(classifier_class, parameters, name, tr, tr_target, n_jobs=6, k=4):
-    out_path = f'classification/{name}'
+    out_path = f'results/{name}'
     try:
         os.mkdir(out_path)
     except FileExistsError:
