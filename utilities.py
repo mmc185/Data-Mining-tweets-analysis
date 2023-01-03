@@ -14,7 +14,7 @@ def get_path():
             if not os.path.exists(DATA_PATH):
                 DATA_PATH = 'H:/Drive condivisi/DM_tweets/data/'
                 if not os.path.exists(DATA_PATH):
-                    DATA_PATH = '../../../Data Mining/'
+                    DATA_PATH = '../../../../Data Mining/'
                     if not os.path.exists(DATA_PATH):
                         os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
 

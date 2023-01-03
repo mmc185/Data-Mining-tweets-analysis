@@ -14,16 +14,16 @@ parameters = {
     "criterion": ["gini", "entropy"],  # , "log_loss"],
     "max_depth": [None] + list(range(5, 100, 20)),
     "min_samples_split": [2, 4],  # 2, 4, 8, 16, 32, 64],
-    "min_samples_leaf": [2, 4],  # , 8, 16, 32, 64, 128],
+    "min_samples_leaf": [16, 64],  # , 8, 16, 32, 64, 128],
     "max_features": ["auto", "sqrt", "log2", None],
     "max_leaf_nodes": [None] + list(range(3, 10, 2)),
-    "min_impurity_decrease": [0.0]  # , 0.1, 0.3]  # , 0.5]
+    "min_impurity_decrease": [0.0] #, 0.1, 0.3]  # , 0.5]
 }
 
 # rf, results_df = grid_search(RandomForestClassifier, parameters, 'random_forest', tr, ts, tr_target, ts_target,
 #                             n_jobs=n_jobs)
 grid_search_with_feature_selection(RandomForestClassifier, parameters, 'random_forest', tr, ts, tr_target, ts_target,
-                                   n_jobs=-1, folds=4, n_features=25)
+                                   n_jobs=n_jobs, folds=4, n_features=25)
 
 '''
 parameters_linear = {
