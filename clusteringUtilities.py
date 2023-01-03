@@ -102,3 +102,23 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     plt.ylabel('bot')
     plt.legend(prop={'size': 30}, labels=['genuine user','bot'])
     plt.savefig(path + "/bot_characterization.png")
+
+
+def plot_landscape(labels, centroids, df, attributes=None, path=None, figsize=(40,4)):
+    #Landscape plot
+    if attributes is None:
+        attributes = df.columns
+    plt.figure(figsize=figsize)
+    for label in np.unique(labels):
+        if centroids is None:
+            cent = df[attributes][labels == label].median()
+        else:
+            cent = centroids[label]
+        plt.plot(cent, label="Cluster %s" % label)
+    plt.tick_params(axis='both', which='major')
+    plt.xticks(range(0, len(df[attributes].columns)), df[attributes].columns, rotation=90)
+    plt.legend()
+    if path is not None:
+        plt.savefig(path + "/landscape.png")
+    else:
+        plt.show()
