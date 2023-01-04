@@ -34,4 +34,6 @@ cluster 4: Only bots. Highest statuses count and n_tweets.
 	Writing style: High use of hashtags, urls and mentions
 
 
-cluster 5: Users with no tweets (but why the means are that high
+cluster 5: Users with no tweets (but why the means are that high??)
+
+With eps=0.55 the retrieved clusters are 9, with the cluster 3 that is splitted in cluster 3, 4 and 6.
