@@ -5,10 +5,12 @@ from sklearn import metrics
 import statistics
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate
 import pandas as pd
+from pandas import Index
 from utilities import get_path
 import os
 from sklearn.feature_selection import SelectKBest, chi2, RFECV, SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 
 
@@ -139,6 +141,11 @@ def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_
     if results_df is None and in_path is not None:
         results_df = pd.read_csv(in_path)
 
+    if 'Chosen_columns' in results_df.columns:
+        feature_list = eval(results_df.iloc[0]['Chosen_columns']).to_list()
+        tr = tr[feature_list]
+        ts = ts[feature_list]
+
     try:
         best_result = results_df.loc[results_df.mean_test_f1.idxmax()][
             ['params', 'mean_train_accuracy', 'mean_train_recall', 'mean_train_precision', 'mean_train_f1',
@@ -156,7 +163,8 @@ def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_
           f'\n\tmean_val_recall: {best_result["mean_test_recall"]}'
           f'\n\tmean_val_precision: {best_result["mean_test_precision"]}'
           f'\n\tmean_val_f1: {best_result["mean_test_f1"]}\n')
-    best_params = best_result['params']
+    best_params = eval(best_result['params'])
+    #best_params = best_result['params']
 
     best_classifier = classifier_class(**best_params)
     best_classifier.fit(tr, tr_target)
