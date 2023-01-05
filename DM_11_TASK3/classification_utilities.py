@@ -136,10 +136,10 @@ def grid_search_with_feature_selection(classifier_class, parameters, name, tr, t
                   results_df=results_df)
 
 
-def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_df=None, in_path=None):
+def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_df=None, in_path=None, sep=','):
 
     if results_df is None and in_path is not None:
-        results_df = pd.read_csv(in_path)
+        results_df = pd.read_csv(in_path, sep=sep)
 
     if 'Chosen_columns' in results_df.columns:
         feature_list = eval(results_df.iloc[0]['Chosen_columns']).to_list()
