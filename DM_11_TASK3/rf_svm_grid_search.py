@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 tr, ts, tr_target, ts_target = prepare_data(MinMaxScaler())
 
-n_jobs = 2
+n_jobs = -1
 print(f'Number of samples in Training set:', len(tr))
 print(f'Number of samples in Test set:', len(ts))
 
