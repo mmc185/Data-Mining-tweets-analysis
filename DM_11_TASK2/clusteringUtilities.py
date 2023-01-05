@@ -3,15 +3,51 @@ from utilities import *
 
 
 def get_metrics(data_scaled, labels, print_out=True):
+    """Compute Silhouette and Davies Bouldin scores for clustering
+
+    Parameters
+    ----------
+    data_scaled: pandas.Dataframe
+        Data on which clustering was performed
+    
+    labels: array-like of shape (n_samples)
+        labels obtained during clustering
+    
+    print_out: boolean, default='False'
+        Boolean value to print scores
+    
+    Returns
+    -------
+    silhouette : float
+        Silhouette score
+    DBscore : float
+        Davies Bouldin score
+    """
     silohuette = metrics.silhouette_score(data_scaled, labels)
     DBscore = metrics.davies_bouldin_score(data_scaled, labels)
     if print_out:
-        print(f"Silouhette score: {silohuette}")  # [-1, 1] Good when near 1
-        print(f"Davies Bouldin score: {DBscore}")  # Good when near 0
+        print(f"Silouhette score: {silohuette}")
+        print(f"Davies Bouldin score: {DBscore}")
     else:
         return silohuette, DBscore
 
+
 def sse(df, labels):
+    """Compute sse on computed labels
+
+    Parameters
+    ----------
+    df: pandas.Dataframe
+        Data on which clustering was performed
+    
+    labels: array-like of shape (n_samples)
+        labels obtained during clustering
+    
+    Returns
+    -------
+    sum : float
+        SSE score 
+    """
     sum = 0
     for label in np.unique(labels):
         mean = df[labels==label].mean().values
@@ -21,8 +57,26 @@ def sse(df, labels):
     return sum
 
 def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filter=None, figsize=(8,8)):
+    """Plot scatter chart w.r.t. attr1 and attr2
+
+    Parameters
+    ----------
+    df: pandas.Dataframe
+        Dataframe to use to plot
+
+    attr1: str
+        Name of the first attribute to plot
+    
+    attr2: str
+        Name of the second attribute to plot
+
+    labels: array-like of shape (n_samples)
+        Labels obtained during clustering
+
+    centroids: array-like of shape (n_samples, n_features)
+        Centroids found during clustering
+    """
     plt.figure(figsize=figsize)
-    #cent = scaler.inverse_transform(kmeans.cluster_centers_)
     scatter = plt.scatter(df[attr1], df[attr2], c=c_labels, s=10)
 
     if filter:
@@ -37,6 +91,21 @@ def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filte
     plt.savefig(filename)
 
 def plots(df, labels, path=None, centroids=None, attributes=None):
+    """Plot different types of charts (landscape, radar, histogram w.r.t. languages, histogram w.r.t. bots) w.r.t. attr1 and attr2
+
+    Parameters
+    ----------
+    df: pandas.Dataframe
+        Data on which clustering was performed
+    
+    labels: array-like of shape (n_samples)
+        labels obtained during clustering
+    
+    Returns
+    -------
+    sum : float
+        SSE score 
+    """
     if attributes is None:
         attributes = df.columns
 
@@ -99,7 +168,6 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     bot_ct = pd.crosstab(labels, df['bot'])
 
     fig, ax = plt.subplots(figsize=(24, 8))  # Sample figsize in inches
-    #plt.figure(figsize=(10,25))
     bot_ct.plot(kind='bar', stacked=False, ax=ax)
     plt.xlabel('Cluster')
     plt.ylabel('bot')
