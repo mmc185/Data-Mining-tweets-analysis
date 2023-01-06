@@ -5,7 +5,13 @@ import math
 import pandas as pd
 import seaborn as sn
 
+TWITTER_FOUNDATION = pd.to_datetime(["20060321"]).astype(np.int64)[0]
+SEP_2022 = pd.to_datetime(["20220915"]).astype(np.int64)[0]
+
 def get_path():
+    """
+    Returns the path from where to load the dataset and where to write the output csv files.
+    """
     DATA_PATH = 'G:/Shared drives/DM_tweets/data/'
     if not os.path.exists(DATA_PATH):
         DATA_PATH = 'G:/Drive condivisi/DM_tweets/data/'
@@ -28,6 +34,11 @@ def get_path():
     return DATA_PATH
 
 def to_float(x):
+    """
+    Converts a value to float, setting NaN values to -1. 
+     x: any value castable to float.
+    :return: the converted value.
+    """
     try:
         x = float(x)
         if (np.isnan(x)):
@@ -38,15 +49,27 @@ def to_float(x):
         return float(-1)
 
 
-def select_best_created_at(dates):
-    twitter_foundation = pd.to_datetime(["20060321"]).astype(np.int64)[0]
-    sep_2022 = pd.to_datetime(["20220915"]).astype(np.int64)[0]
 
+def select_best_created_at(dates, start_date=TWITTER_FOUNDATION, end_date=SEP_2022):
+    """
+    Select valid dates from a pandas series of  datetimes.
+    Parameters
+    ----------
+    dates: Pandas series of dates.
+    start_date: datetime object. Datetimes before start_date are considered invalid.
+    end_date: datetime object. Datetimes after end_date are considered invalid.
+    
+    Returns
+    -------
+    An empty list if no date is valid. 
+    A datetime if there is only one valid date. 
+    A list of datetime objects if there is more than one valid date.
+    """
     correct = []
     wrong = []
 
     for date in dates:
-        if date < sep_2022 and date >= twitter_foundation:
+        if date < end_date and date >= start_date:
             correct.append(date)
         else:
             wrong.append(date)
@@ -61,109 +84,142 @@ def select_best_created_at(dates):
         # we return all the candidates.
         return correct
 
-
-def len_with_int(x):
-    try:
-        return len(x)
-    except TypeError:
-        return 1
-
-
-# Plot a boxplot w.r.t. a single attribute passed as parameter.
-def plot_boxplot(df, col, log=False, path=None, date=False, timedelta=False):
+# 
+def plot_boxplot(df, attribute, log=False, out_path=None, date=False, timedelta=False):
+    """
+    Plot a boxplot w.r.t. a single attribute passed as parameter.
+    
+    Parameters
+    ----------
+        df: the dataframe
+        attribute: string. The attribute wrt which the boxplot is computer.
+        log: boolean. Whether to scale df[col] in logarithmic scale or not.
+        out_path: string. File path to which save the image. If None, the plot is just shown via plt.show().
+        date: boolean. If the attribute is a int timestamp (number of seconds), the y-ticks are converted to YYYY-MM format.
+        timedelta: boolean. If the attribute is a int timedelta (number of seconds), the y-ticks are converted to YYYY-MM format.
+    """
     df_copy = df.copy()
-    df_copy[col] = df_copy[col].fillna(-1.0)
+    df_copy[attribute] = df_copy[attribute].fillna(-1.0)
 
     # Plot the distribution of the indicated column
-    plt.title(col)
-    plt.boxplot(df_copy[df_copy[col] != -1.0][col], showmeans=True)
+    plt.title(attribute)
+    plt.boxplot(df_copy[df_copy[attribute] != -1.0][attribute], showmeans=True)
     if log:
         plt.yscale('log')
 
     if date:
-        date_labels(df, col, axis='y')
+        date_labels(df, attribute, axis='y')
 
     if timedelta:
-        timedelta_labels(df, col, axis='y')
+        timedelta_labels(df, attribute, axis='y')
 
 
-    if path is None:
+    if out_path is None:
         plt.show()
     else:
-        plt.savefig(path)
+        plt.savefig(out_path)
 
 
-def eval_correlation(df_corr, method='pearson', path=None, figsize=(10,10)):
-    correlation_matrix = df_corr.corr(method=method)
-    fig, ax = plt.subplots(figsize=figsize)  # Sample figsize in inches
-    sn.heatmap(correlation_matrix, annot=True, linewidths=.5, ax=ax)
-    if path is not None:
-        plt.savefig(path)
-    else:
-        plt.show()
+def eval_correlation(df, method='pearson', out_path=None, figsize=(10, 10)):
+    """
+    Plots a correlation matrix of a dataframe attributes.
+    Parameters
+    ----------    
+        df: pandas dataframe object.
+        method: string. Correlation method supported by pandas.Dataframe.corr()
+        out_path: string. File path to which save the image. If None, the plot is just shown via plt.show().
+        figsize: tuple. Pyplot figsize parameter.
+    """
+    correlation_matrix = df.corr(method=method)
+    heatmap(correlation_matrix, out_path, figsize)
 
-def heatmap(matrix, path=None, figsize=(10,10)):
+def heatmap(matrix, out_path=None, figsize=(10, 10)):
+    """
+    Plots a correlation matrix of a dataframe attributes.
+    Parameters
+    ----------
+        matrix: rectangular dataset
+            2D dataset that can be coerced into an ndarray. If a Pandas DataFrame
+            is provided, the index/column information will be used to label the
+            columns and rows.
+        out_path: string. File path to which save the image. If None, the plot is just shown via plt.show().
+        figsize: tuple. Pyplot figsize parameter.
+    """
     fig, ax = plt.subplots(figsize=figsize)  # Sample figsize in inches
     sn.heatmap(matrix, annot=True, linewidths=.5, ax=ax)
-    if path is not None:
-        plt.savefig(path)
+    if out_path is not None:
+        plt.savefig(out_path)
     else:
         plt.show()
+def plot_hist(df, attribute, log=False, out_path=None, date=False):
+    """
+    Plot a histogram w.r.t. a single attribute passed as parameter.
 
-#Plot a histogram w.r.t. a single attribute passed as parameter.
-def plot_hist(dataframe, attribute_name, log=False, path=None, date=False):
-    df = pd.DataFrame()
+    Parameters
+    ----------
+        df: the dataframe
+        attribute: string. The attribute wrt which the boxplot is computer.
+        log: boolean. Whether to scale df[col] in logarithmic scale or not.
+        out_path: string. File path to which save the image. If None, the plot is just shown via plt.show().
+        date: boolean. If the attribute is a int timestamp (number of seconds), the x-ticks are converted to YYYY-MM format.
+    """
+    transformed_df = pd.DataFrame()
 
     if log:
-        log_attribute_name = attribute_name + '_log'
-        df[log_attribute_name] = np.log(dataframe[attribute_name].values)
+        log_attribute_name = attribute + '_log'
+        transformed_df[log_attribute_name] = np.log(df[attribute].values)
 
-        attribute_name = log_attribute_name
-        df[attribute_name] = df[attribute_name].replace(-np.inf, 0)
+        attribute = log_attribute_name
+        transformed_df[attribute] = transformed_df[attribute].replace(-np.inf, 0)
 
     else:
-        df[attribute_name] = dataframe[attribute_name].values
-    n_bins = math.ceil(np.log2(len(df[attribute_name])) + 1) # Sturges' rule
-    df.hist(attribute_name, bins=n_bins, log=True)
+        transformed_df[attribute] = df[attribute].values
+    n_bins = math.ceil(np.log2(len(transformed_df[attribute])) + 1) # Sturges' rule
+    transformed_df.hist(attribute, bins=n_bins, log=True)
 
     if date:
         x_ticks = plt.xticks()
         plt.xticks(x_ticks[0], pd.to_datetime(x_ticks[0]).to_period('M'))
-        #date_labels(df, attribute_name, axis='x')
+
+    if out_path is not None:
+        plt.savefig(out_path)
 
 
-    if path is not None:
-        plt.savefig(path)
-
-
-def date_labels(df, attr, format='M', axis='x', n_ticks = 6):
+def date_labels(df, attribute, format='M', axis='x', n_ticks = 6):
     """
     Utility function to put human readable labels for timestamps instead of seconds.
-    :param df:
-    :param attr:
-    :param format:
-    :param axes: 'x','y', the axes where to convert the date labels
+
+    Parameters
+    ----------
+        df: pandas.Dataframe containing attribute.
+        attribute: string. The df attribute to convert.
+        format: string. The format to which convert the datetimes. Default is 'M', which converts to 'YYYY-MM'.
+        axis: string. Accepted values are 'x' and'y'. The axes where to convert the date labels. Default is 'x'.
+        n_ticks: how many ticks to display on the selected axis. Default is 6.
     :return:
     """
     # create indices and labels for the plot. This is done because if you pass the entire sequence it takes years to compute
-    indices = [df[attr].min() + q*(df[attr].max()-df[attr].min()) for q in np.array(list(range(0,n_ticks)))/(n_ticks-1)]
+    indices = [df[attribute].min() + q * (df[attribute].max() - df[attribute].min()) for q in np.array(list(range(0, n_ticks))) / (n_ticks - 1)]
     labels = pd.to_datetime(indices).to_period(format)
     if axis == 'x':
         plt.xticks(indices, labels= labels)
     if axis == 'y':
         plt.yticks(indices, labels= labels)
 
-def timedelta_labels(df, attr, format='M', axis='x', n_ticks = 6):
+def timedelta_labels(df, attribute, axis='x', n_ticks = 6):
     """
-    Utility function to put human readable labels for timestamps instead of seconds.
-    :param df:
-    :param attr:
-    :param format:
-    :param axes: 'x','y', the axes where to convert the date labels
-    :return:
+    Utility function to put human readable labels for timedeltas instead of seconds. The seconds are converted in days.
+
+    Parameters
+    ----------
+        df: pandas.Dataframe containing attribute.
+        attribute: string. The df attribute to convert.
+        axis: string. Accepted values are 'x' and'y'. The axes where to convert the date labels. Default is 'x'.
+        n_ticks: how many ticks to display on the selected axis. Default is 6.
     """
+
     # create indices and labels for the plot. This is done because if you pass the entire sequence it takes years to compute
-    indices = [df[attr].min() + q*(df[attr].max()-df[attr].min()) for q in np.array(list(range(0,n_ticks)))/(n_ticks-1)]
+    indices = [df[attribute].min() + q * (df[attribute].max() - df[attribute].min()) for q in np.array(list(range(0, n_ticks))) / (n_ticks - 1)]
 
     labels = pd.to_timedelta(indices).days
     axis_label = "days"
@@ -174,7 +230,20 @@ def timedelta_labels(df, attr, format='M', axis='x', n_ticks = 6):
         plt.ylabel(axis_label)
         plt.yticks(indices, labels=labels)
 
-def _scatter_show(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
+def _scatter_show(df, x_attr, y_attr, out_path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
+    """
+    Creates a scatter and displays and saves it to the specified out_path.
+    Parameters
+    ----------
+        df: pandas.Dataframe containing x_attr, y_attr
+        x_attr: string. Dataframe attribute to put on the x axis.
+        y_attr: string. Dataframe attribute to put on the y axis.
+        out_path: string. Path where to save the plot. If none just calls plt.show().
+        log: boolean. Whether to use or not log scale on y axis.
+        date_axis: string. Accepted values are None, 'x', 'y', or 'both'. If there is some timestamp dimension, the specified axis ticks are converted to 'YYYY-MM' format..
+        xlabel: string. Label for x axis.
+        ylabel: string. Label for y axis.
+    """
     if xlabel is None:
         plt.xlabel(x_attr)
     else:
@@ -194,21 +263,25 @@ def _scatter_show(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlab
     if log:
         plt.yscale('log')
     plt.legend()
-    if path is None:
+    if out_path is None:
         plt.show()
     else:
-        plt.savefig(path)
+        plt.savefig(out_path)
 
-def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
+def plot_scatter(df, x_attr, y_attr, out_path=None, log=False, date_axis=None, xlabel=None, ylabel=None):
     """
+    Plot a scatterplot over two dataframe attributes.
 
-    :param df: dataframe containing x_attr, y_attr
-    :param x_attr: dataframe attribute to put on the x axis.
-    :param y_attr: dataframe attribute to put on the y axis.
-    :param path: path where to save the plot. If none just calls plt.show().
-    :param log: boolean. Whether to use or not log scale on y axis.
-    :param date_axis: None, 'x', 'y', or 'both'. If there is some timestamp dimension, pass the respective axis to convert the ticks in human readable format.
-    :return:
+    Parameters
+    ----------
+     df: pandas.Dataframe containing x_attr, y_attr
+     x_attr: string. Dataframe attribute to put on the x axis.
+     y_attr: string. Dataframe attribute to put on the y axis.
+     out_path: string. Path where to save the plot. If none just calls plt.show().
+     log: boolean. Whether to use or not log scale on y axis.
+     date_axis: string. Accepted values are None, 'x', 'y', or 'both'. If there is some timestamp dimension, the specified axis ticks are converted to 'YYYY-MM' format..
+     xlabel: string. Label for x axis.
+     ylabel: string. Label for y axis.
     """
 
     df_copy = df[[x_attr, y_attr]].copy()
@@ -217,11 +290,26 @@ def plot_scatter(df, x_attr, y_attr, path=None, log=False, date_axis=None, xlabe
         df_copy[y_attr] = df_copy[y_attr].replace(0, 0.5)
 
     plt.scatter(df_copy[x_attr], df_copy[y_attr], color='g', marker='*')
-    _scatter_show(df_copy, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
+    _scatter_show(df_copy, x_attr, y_attr, log=log, out_path=out_path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
 
 
-def bot_scatter(df, x_attr, y_attr, log=False, path=None, date_axis=None, xlabel=None, ylabel=None):
+def bot_scatter(df, x_attr, y_attr, log=False, out_path=None, date_axis=None, xlabel=None, ylabel=None):
+    """
+    Plot a scatterplot over two dataframe attributes, drawing the points with bot=1 to red and bot=0 in green.
+
+    Parameters
+    ----------
+        df: pandas.Dataframe containing x_attr, y_attr, and a boolean column named "bot".
+        x_attr: string. Dataframe attribute to put on the x axis.
+        y_attr: string. Dataframe attribute to put on the y axis.
+        log: boolean. Whether to use or not log scale on y axis.
+        out_path: string. Path where to save the plot. If none just calls plt.show().
+        date_axis: string. Accepted values are None, 'x', 'y', or 'both'. If there is some timestamp dimension, the specified axis ticks are converted to 'YYYY-MM' format..
+        xlabel: string. Label for x axis.
+        ylabel: string. Label for y axis.
+    :return:
+    """
 
     df_copy = df[[x_attr, y_attr, 'bot']].copy()
 
@@ -233,9 +321,19 @@ def bot_scatter(df, x_attr, y_attr, log=False, path=None, date_axis=None, xlabel
     plt.scatter(df_copy[df_copy['bot'] == 1][x_attr],
                 df_copy[df_copy['bot'] == 1][y_attr], color='r', marker='2', label='Bot user', alpha=0.5)
 
-    _scatter_show(df_copy, x_attr, y_attr, log=log, path=path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
+    _scatter_show(df_copy, x_attr, y_attr, log=log, out_path=out_path, date_axis=date_axis, xlabel=xlabel, ylabel=ylabel)
 
-def lang_scatter(df, attr, log=False, path=None):
+def lang_scatter(df, attr, log=False, out_path=None):
+    """
+    Plots a scatterplot with df["lang"] on the x axis and df["attr"] on the y axis.
+
+    Parameters
+    ----------
+        df: pandas.Dataframe containing x_attr, y_attr, and a boolean column named "bot".
+        attr: string. Dataframe attribute to put on the x axis.
+        log: boolean. Whether to use or not log scale on y axis.
+        out_path: string. Path where to save the plot. If none just calls plt.show().
+    """
     plt.figure(figsize=(10, 5))
-    bot_scatter(df, 'lang', attr, log, path)
+    bot_scatter(df, 'lang', attr, log, out_path)
 
