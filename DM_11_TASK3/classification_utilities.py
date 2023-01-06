@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-#from cv2 import stereo_PropagationParameters
 from sklearn import metrics
 import statistics
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate
@@ -15,6 +14,25 @@ from sklearn.linear_model import LogisticRegression
 
 
 def get_metrics(target, pred, target_labels, set_kind, verbose=True):
+    """Print accuracy metrics, if verbose is True print also precision, recall, F1 and support scores.
+
+    Parameters
+    ----------
+    target: array-like of shape (n_samples)
+        Data labels.
+    
+    pred: array-like of shape (n_samples)
+        Labels obtained during classification.
+
+    target_labels: array-like of shape (n_classes)
+        Names to assign to each class.
+    
+    set_kind: str
+        String indicating which data set has been used (train,validation,test).
+    
+    verbose: boolean, default='True'
+        Boolean used to print more metrics or not.
+    """
     print('Accuracy', metrics.accuracy_score(target, pred))
     if verbose:
         print(f'Precision {set_kind} set ', metrics.precision_score(target, pred, average='weighted'))
@@ -26,6 +44,19 @@ def get_metrics(target, pred, target_labels, set_kind, verbose=True):
 
 
 def confusion_matrix(target, pred, path=None):
+    """Compute the confusion matrix for the classification results.
+
+    Parameters
+    ----------
+    target: array-like of shape (n_samples)
+        Data labels.
+    
+    pred: array-like of shape (n_samples)
+        Labels obtained during classification.
+
+    path: str, default='None'
+        Path used to select the location where the file needs to be saved. If None it shows the plot without saving it.
+    """
     cm = metrics.confusion_matrix(target, pred)
     disp = metrics.ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
@@ -36,6 +67,25 @@ def confusion_matrix(target, pred, path=None):
 
 
 def cross_validation(model, tr, target):
+    """Compute cross validation.
+
+    Parameters
+    ----------
+    model : estimator object implementing 'fit'
+        The object to use to fit the data.
+    
+    tr: array-like of shape (n_samples, n_features)
+        Training set.
+
+    target: array-like of shape (n_samples)
+        Training set labels.
+    
+    Returns
+    -------
+    cv_scores : dictionary
+        Mean of accuracy, recall and f1 scores obtained in the cross validation.
+    
+    """
     cv_scores = cross_validate(model, tr, target, cv=5, return_train_score=True, scoring=['accuracy', 'recall', 'f1'])
 
     for k in cv_scores.keys():
@@ -44,7 +94,18 @@ def cross_validation(model, tr, target):
 
 
 def discretize_column(df, column_name):
-    # get the unique variable's values
+    """Convert indicated column of the dataframe from categorical values to discrete values.
+
+    Parameters
+    ----------
+    df : pandas.Dataframe
+        Dataframe containing columns to convert.
+    
+    column_name: str
+        Name of the column to convert.
+    
+    """
+    # Get the unique variable's values
     values = df[column_name].unique()
 
     d = dict((el, i) for i, el in enumerate(values))
@@ -53,13 +114,35 @@ def discretize_column(df, column_name):
 
 
 def prepare_data(scaler=None, k=0):
+    """Read from file the dataset and split it into development and test set. Optionally it performs also scaling and feature selection.
+
+    Parameters
+    ----------
+    scaler : sklearn scaler object, default='None'
+        The object to use to scale data. If None no scaling is applied.
+    
+    k : int, default=0
+        Number of feature to select. If 0 no feature selection is applied.
+    
+    Returns
+    -------
+    dev : array-like of shape (n_dev_samples, n_features)
+        Extracted development set.
+
+    test : array-like of shape (n_test_samples, n_features)
+        Extracted test set.
+
+    dev_labels : array-like of shape (n_dev_samples)
+        Development set labels.
+
+    test_labels : array-like of shape (n_test_samples)
+        Test set labels.
+    """
     DATA_PATH = get_path()
 
     if scaler is not None:
         df_indicators = pd.read_csv(DATA_PATH + 'indicators_clean.csv', sep='#')
-        # df_tweets_ind = pd.read_csv(DATA_PATH+'tweets_with_indicators.csv', sep='#')
         df_users = pd.read_csv(DATA_PATH + 'users_clean.csv', sep='#')
-        # df_merge = pd.read_csv(DATA_PATH + 'data_scaled_for_clustering.csv', sep='#')
 
         df_users.id = df_users.id.astype(str)
         df_merge = df_users.merge(df_indicators, left_on='id', right_on='user_id', how='left')
@@ -101,6 +184,40 @@ def prepare_data(scaler=None, k=0):
 
 def grid_search_with_feature_selection(classifier_class, parameters, name, tr, ts, tr_target, ts_target, n_jobs=6,
                                        folds=4, n_features=25):
+    """Perform grid search applying three different feature selection approaches (SelectKBest, RFECV, SelectFromModel). Save results on a file and apply testing on the best result.
+
+    Parameters
+    ----------
+    classifier_class : estimator object implementing 'fit'
+        The object to use to fit the data.
+    
+    parameters : dictionary
+        Dictionary containing all the possible values for each hyper-parameter.
+
+    name : str
+        Directory name in which to save results.
+
+    tr : pandas.Dataframe
+        Data used to apply training.
+
+    ts : pandas.Dataframe
+        Data used to test the best model.
+
+    tr_target : array-like of shape (n_train_samples)
+        Train set labels.
+    
+    ts_target : array-like of shape (n_test_samples)
+        Test set labels.
+
+    n_jobs : int, default=6
+        Number of threads to use during grid search.
+
+    folds : int, default=4
+        Number of folds to use in the KFoldCV.
+
+    n_features : int, default=25
+        Number of features to select with the SelectKBest feature selection.
+    """
     out_path = f'results/{name}/'
     try:
         os.mkdir(out_path)
@@ -138,8 +255,48 @@ def grid_search_with_feature_selection(classifier_class, parameters, name, tr, t
 
 def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_df=None, in_path=None, sep=','):
 
+    """Evaluate results obtained from a grid search, find the best model w.r.t. accuracy and print its scores.
+
+    Parameters
+    ----------
+    classifier_class : estimator object implementing 'fit'
+        The object to use to fit the data.
+
+    tr : pandas.Dataframe
+        Data used to apply training.
+
+    ts : pandas.Dataframe
+        Data used to test the best model.
+
+    tr_target : array-like of shape (n_train_samples)
+        Train set labels.
+    
+    ts_target : array-like of shape (n_test_samples)
+        Test set labels.
+
+    out_path : str
+        Path in which to save the results.
+
+    results_df : int, default='None'
+        Dataframe containing the results of a grid search. If None results are taken from a file otherwise an exception is raised.
+
+    in_path : str, default='None'
+        Path from which to read the results.If None use the passed results_df otherwise an exception is raised.
+
+    sep : str, default=','
+        Number of features to select with the SelectKBest feature selection.
+    
+    Returns
+    -------
+    best_classifier : estimator object implementing 'fit'
+        The object of the best model found.
+    """
+
     if results_df is None and in_path is not None:
         results_df = pd.read_csv(in_path, sep=sep)
+
+    if results_df is None and in_path is None:
+        raise ValueError('results_df and in_path cannot be both None')
 
     if 'Chosen_columns' in results_df.columns:
         feature_list = eval(results_df.iloc[0]['Chosen_columns']).to_list()
@@ -176,6 +333,38 @@ def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_
 
 
 def grid_search(classifier_class, parameters, name, tr, tr_target, n_jobs=6, k=4):
+    
+    """Perform grid search and save results on a file.
+
+    Parameters
+    ----------
+    classifier_class : estimator object implementing 'fit'
+        The object to use to fit the data.
+    
+    parameters : dictionary
+        Dictionary containing all the possible values for each hyper-parameter.
+
+    name : str
+        Directory name in which to save results.
+
+    tr : pandas.Dataframe
+        Data used to apply training.
+
+    tr_target : array-like of shape (n_train_samples)
+        Train set labels.
+
+    n_jobs : int, default=6
+        Number of threads to use during grid search.
+
+    k : int, default=4
+        Number of folds to use in the KFoldCV.
+
+    Returns
+    -------
+    results_df : pandas.Dataframe
+        Dataframe containing the results of the grid search.    
+    """
+
     out_path = f'results/{name}'
     try:
         os.mkdir(out_path)
