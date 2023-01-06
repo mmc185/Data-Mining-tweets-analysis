@@ -8,28 +8,37 @@ import seaborn as sn
 TWITTER_FOUNDATION = pd.to_datetime(["20060321"]).astype(np.int64)[0]
 SEP_2022 = pd.to_datetime(["20220915"]).astype(np.int64)[0]
 
+def read_path_from_file():
+
+    with open("../config.txt", 'r') as f:
+        comment = f.readline()
+        return f.readline()
+
+
 def get_path():
     """
     Returns the path from where to load the dataset and where to write the output csv files.
     """
-    DATA_PATH = 'G:/Shared drives/DM_tweets/data/'
+    DATA_PATH = read_path_from_file()
     if not os.path.exists(DATA_PATH):
-        DATA_PATH = 'G:/Drive condivisi/DM_tweets/data/'
+        DATA_PATH = 'G:/Shared drives/DM_tweets/data/'
         if not os.path.exists(DATA_PATH):
-            DATA_PATH = '../DM_data/'
+            DATA_PATH = 'G:/Drive condivisi/DM_tweets/data/'
             if not os.path.exists(DATA_PATH):
-                DATA_PATH = 'H:/Drive condivisi/DM_tweets/data/'
+                DATA_PATH = '../DM_data/'
                 if not os.path.exists(DATA_PATH):
-                    DATA_PATH = '../../../../Data Mining/'
+                    DATA_PATH = 'H:/Drive condivisi/DM_tweets/data/'
                     if not os.path.exists(DATA_PATH):
-                        os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
+                        DATA_PATH = '../../../../Data Mining/'
+                        if not os.path.exists(DATA_PATH):
+                            os.system('cmd /k"cp ./utilities.py /content/drive/MyDrive/code/utilities.py"')
 
-                        from google.colab import drive
+                            from google.colab import drive
 
-                        drive.mount('/content/drive')
+                            drive.mount('/content/drive')
 
-                        DATA_PATH = '/content/drive/Shareddrives/DM_tweets/data/'
-                        os.system('cmd /k"cp /content/drive/MyDrive/code/utilities.py ."')
+                            DATA_PATH = '/content/drive/Shareddrives/DM_tweets/data/'
+                            os.system('cmd /k"cp /content/drive/MyDrive/code/utilities.py ."')
 
     return DATA_PATH
 
