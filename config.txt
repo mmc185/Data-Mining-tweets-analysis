@@ -1,2 +1,0 @@
-#Insert here the path to the folder in which are saved all the files
-'C:\Users\User\Documents'
