@@ -9,13 +9,13 @@ def get_metrics(data_scaled, labels, print_out=True):
     ----------
     data_scaled: pandas.Dataframe
         Data on which clustering was performed
-    
+
     labels: array-like of shape (n_samples)
         labels obtained during clustering
-    
+
     print_out: boolean, default='False'
         Boolean value to print scores
-    
+
     Returns
     -------
     silhouette : float
@@ -39,14 +39,14 @@ def sse(df, labels):
     ----------
     df: pandas.Dataframe
         Data on which clustering was performed
-    
+
     labels: array-like of shape (n_samples)
         labels obtained during clustering
-    
+
     Returns
     -------
     sum : float
-        SSE score 
+        SSE score
     """
     sum = 0
     for label in np.unique(labels):
@@ -66,7 +66,7 @@ def scatterplot(df, attr1, attr2, c_labels, centroids=None, filename=None, filte
 
     attr1: str
         Name of the first attribute to plot
-    
+
     attr2: str
         Name of the second attribute to plot
 
@@ -97,14 +97,14 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     ----------
     df: pandas.Dataframe
         Data on which clustering was performed
-    
+
     labels: array-like of shape (n_samples)
         labels obtained during clustering
-    
+
     Returns
     -------
     sum : float
-        SSE score 
+        SSE score
     """
     if attributes is None:
         attributes = df.columns
@@ -168,8 +168,29 @@ def plots(df, labels, path=None, centroids=None, attributes=None):
     bot_ct = pd.crosstab(labels, df['bot'])
 
     fig, ax = plt.subplots(figsize=(24, 8))  # Sample figsize in inches
+    #plt.figure(figsize=(10,25))
     bot_ct.plot(kind='bar', stacked=False, ax=ax)
     plt.xlabel('Cluster')
     plt.ylabel('bot')
     plt.legend(prop={'size': 15}, loc="upper right",  labels=['genuine user','bot'])
     plt.savefig(path + "/bot_characterization.png")
+
+
+def plot_landscape(labels, centroids, df, attributes=None, path=None, figsize=(40,4)):
+    #Landscape plot
+    if attributes is None:
+        attributes = df.columns
+    plt.figure(figsize=figsize)
+    for label in np.unique(labels):
+        if centroids is None:
+            cent = df[attributes][labels == label].median()
+        else:
+            cent = centroids[label]
+        plt.plot(cent, label="Cluster %s" % label)
+    plt.tick_params(axis='both', which='major')
+    plt.xticks(range(0, len(df[attributes].columns)), df[attributes].columns, rotation=90)
+    plt.legend()
+    if path is not None:
+        plt.savefig(path + "/landscape.png")
+    else:
+        plt.show()
