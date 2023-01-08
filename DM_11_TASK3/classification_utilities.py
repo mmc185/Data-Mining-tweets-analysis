@@ -11,6 +11,9 @@ from sklearn.feature_selection import SelectKBest, chi2, RFECV, SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
 
 
 def get_metrics(target, pred, target_labels, set_kind, verbose=True):
@@ -329,7 +332,21 @@ def test_best(classifier_class, tr, ts, tr_target, ts_target, out_path, results_
     print("Test set metrics: ")
     get_metrics(ts_target, ts_pred, ['genuine_user', 'bot'], 'test')
     confusion_matrix(ts_target, ts_pred, out_path + 'confusion_matrix.png')
+
+    if type(best_classifier) is DecisionTreeClassifier:
+        plot_tree(best_classifier, out_path, ts)
+
     return best_classifier
+
+
+def plot_tree(best_classifier, out_path, ts):
+    # Plot the DecisionTree found structure
+    dot_data = export_graphviz(best_classifier, out_file=None, feature_names=list(ts.columns), filled=True,
+                               rounded=True,
+                               class_names=['genuine user', 'bot'])
+    graph = pydotplus.graph_from_dot_data(dot_data)
+    with open(out_path + 'dtree_graph.png', 'wb') as png:
+        png.write(Image(graph.create_png()).data)
 
 
 def grid_search(classifier_class, parameters, name, tr, tr_target, n_jobs=6, k=4):
