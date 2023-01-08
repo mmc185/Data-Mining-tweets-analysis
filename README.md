@@ -4,7 +4,7 @@ More info about the project assignments can be found in `project_description_dm2
 
 ## Setup
 
-To attach the directory containing the dataset, please modify the data path in the `config.txt` file.\
+To attach the directory containing the dataset, please modify the data path in the `config.py` file.\
 This directory will also be used to save all the output `csv` files.
 
 ## Repository structure
