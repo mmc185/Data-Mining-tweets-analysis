@@ -1,5 +1,8 @@
 # DM_tweets - Group 11
-Development of the project for the Data Mining course a.y. 2022/2023 at University of Pisa. \
+
+<img src="imgs/image.png" height="256" align="right"/>
+
+Development of the project for the <i>Data Mining</i> course a.y. 2022/2023 at <i>University of Pisa</i>. \
 More info about the project assignments can be found in `project_description_dm2022.pdf`.
 
 ## Setup
